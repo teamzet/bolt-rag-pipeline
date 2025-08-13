@@ -1,0 +1,44 @@
+Salesforce Lead Creation - Manual Test Steps
+
+Test Case ID: SF_LEAD_001
+Test Case Name: Create New Lead with Required Fields
+Priority: High
+Test Type: Functional
+
+Prerequisites:
+- User has valid Salesforce login credentials
+- User has Lead creation permissions
+- Test environment is accessible
+
+Test Steps:
+1. Navigate to Salesforce login page
+2. Enter valid username and password
+3. Click "Log In" button
+4. Verify successful login to Salesforce home page
+5. Click on "Leads" tab in the navigation menu
+6. Click "New" button to create a new lead
+7. Fill in the following required fields:
+   - First Name: "John"
+   - Last Name: "TestLead"
+   - Company: "Test Company Inc"
+   - Email: "john.testlead@example.com"
+   - Phone: "+1-555-123-4567"
+   - Lead Source: "Web"
+8. Click "Save" button
+
+Expected Results:
+- New lead should be created successfully
+- Lead record should display with entered information
+- Lead ID should be generated automatically
+- Lead status should be set to "Open - Not Contacted"
+- Success message should appear: "Lead 'John TestLead' was created"
+
+Test Data:
+- Valid Salesforce credentials
+- Unique email address for each test run
+- Valid phone number format
+
+Notes:
+- Test should be executed in sandbox environment
+- Lead should be deleted after test completion
+- Verify all required field validations work correctly
