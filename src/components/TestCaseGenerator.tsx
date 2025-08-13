@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Zap, Copy, Download, CheckCircle, Play, Square, AlertCircle } from 'lucide-react';
 import axios from 'axios';
@@ -19,6 +19,7 @@ interface ExecutionResult {
   return_code: number;
   execution_time: string;
 }
+
 const TestCaseGenerator: React.FC = () => {
   const [description, setDescription] = useState('');
   const [generatedTestCase, setGeneratedTestCase] = useState<TestCaseResult | null>(null);
@@ -26,6 +27,19 @@ const TestCaseGenerator: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
+  const resultsEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      resultsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  useEffect(() => {
+    if (generatedTestCase || executionResult) {
+      scrollToBottom();
+    }
+  }, [generatedTestCase, executionResult]);
 
   const handleGenerateTestCase = async () => {
     if (!description.trim() || isGenerating) return;
@@ -108,43 +122,17 @@ const TestCaseGenerator: React.FC = () => {
       setIsExecuting(false);
     }
   };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="p-6 border-b border-white/10">
+      <div className="p-6 border-b border-white/10 flex-shrink-0">
         <h2 className="text-2xl font-bold text-white mb-2">Test Case Generator</h2>
         <p className="text-white/60">Generate detailed test cases based on your documentation</p>
       </div>
 
-      {/* Input Section */}
-      <div className="p-6 border-b border-white/10">
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-white mb-2">
-              Describe the functionality you want to test
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g., Login functionality with username and password validation, or Salesforce lead creation process..."
-              className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              rows={4}
-            />
-          </div>
-          
-          <button
-            onClick={handleGenerateTestCase}
-            disabled={!description.trim() || isGenerating}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl text-white font-medium hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-          >
-            <Zap className="w-4 h-4" />
-            {isGenerating ? 'Generating...' : 'Generate Test Case'}
-          </button>
-        </div>
-      </div>
-
-      {/* Results Section */}
-      <div className="flex-1 p-6 overflow-hidden">
+      {/* Results Section - Now at the top */}
+      <div className="flex-1 p-6 overflow-y-auto">
         {isGenerating && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -162,9 +150,9 @@ const TestCaseGenerator: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-4 h-full flex flex-col"
+            className="space-y-4"
           >
-            <div className="flex items-center justify-between flex-shrink-0">
+            <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-white">Generated Test Case</h3>
               <div className="flex gap-2">
                 <button
@@ -193,7 +181,7 @@ const TestCaseGenerator: React.FC = () => {
             </div>
 
             {/* Accuracy and Stats */}
-            <div className="flex items-center gap-4 text-sm text-white/70 flex-shrink-0">
+            <div className="flex items-center gap-4 text-sm text-white/70">
               <div className="flex items-center gap-2">
                 <span>Accuracy:</span>
                 <div className="w-20 bg-white/10 rounded-full h-2">
@@ -207,8 +195,8 @@ const TestCaseGenerator: React.FC = () => {
               <div>Sources Used: {generatedTestCase.sources_used}</div>
             </div>
 
-            <div className="bg-white/10 border border-white/20 rounded-xl p-6 flex-1 overflow-hidden">
-              <pre className="text-white whitespace-pre-wrap font-mono text-sm leading-relaxed h-full overflow-y-auto">
+            <div className="bg-white/10 border border-white/20 rounded-xl p-6">
+              <pre className="text-white whitespace-pre-wrap font-mono text-sm leading-relaxed">
                 {generatedTestCase.test_case}
               </pre>
             </div>
@@ -218,7 +206,7 @@ const TestCaseGenerator: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white/10 border border-white/20 rounded-xl p-4 flex-shrink-0"
+                className="bg-white/10 border border-white/20 rounded-xl p-4"
               >
                 <div className="flex items-center gap-2 mb-3">
                   {executionResult.success ? (
@@ -265,6 +253,36 @@ const TestCaseGenerator: React.FC = () => {
             </p>
           </div>
         )}
+
+        {/* Scroll anchor */}
+        <div ref={resultsEndRef} />
+      </div>
+
+      {/* Input Section - Now at the bottom */}
+      <div className="p-6 border-t border-white/10 flex-shrink-0">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">
+              Describe the functionality you want to test
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="e.g., Login functionality with username and password validation, or Salesforce lead creation process..."
+              className="w-full p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows={4}
+            />
+          </div>
+          
+          <button
+            onClick={handleGenerateTestCase}
+            disabled={!description.trim() || isGenerating}
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl text-white font-medium hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+          >
+            <Zap className="w-4 h-4" />
+            {isGenerating ? 'Generating...' : 'Generate Test Case'}
+          </button>
+        </div>
       </div>
     </div>
   );
